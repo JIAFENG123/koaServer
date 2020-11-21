@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>test-upload-file</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery.form/4.3.0/jquery.form.js"></script>
+</head>
+
+<body>
+    <form method="post" id="form">
+        <input type="file" id="file" multiple>
+
+    </form>
+    <button>submit</button>
+    <script>
+        var file = null
+        var formdata = null
+        formdata = new FormData()
+        $('#file').change(function (e) {
+            if (e.target.files) {
+                for (let i = 0; i < e.target.files.length; i++) {
+                    file = e.target.files[i]
+                    formdata.append('file', file)
+                }
+            }
+
+        })
+
+        $('button').click(function (e) {
+            $.ajax({
+                url: 'http://localhost:8088/uploadFile',
+                type: 'POST',
+                cache: false,
+                processData: false,   // jQuery不要去处理发送的数据
+                contentType: false,   // jQuery不要去设置Content-Type请求头
+                // dataType: 'json',
+                data: formdata,
+                success: function (data) {
+                    console.log(data)
+                },
+                error: function () {
+
+                },
+                complete() {
+                }
+            })
+        })
+    </script>
+</body>
+
+</html>

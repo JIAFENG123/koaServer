@@ -12,10 +12,12 @@
   "dependencies": {
     "apollo-server-koa": "^2.19.0",
     "axios": "^0.21.0",
+    "fs-extra": "^9.0.1",
     "graphql": "^15.4.0",
     "koa": "^2.13.0",
     "koa-body": "^4.2.0",
     "koa-bodyparser": "^4.3.0",
+    "koa-cors": "^0.0.16",
     "koa-router": "^10.0.0",
     "nodemon": "^2.0.6",
     "sequelize": "^6.3.5"

@@ -1,6 +1,7 @@
 
 const Koa = require('koa')
 const { ApolloServer, gql } = require('apollo-server-koa');
+const cors = require('koa-cors');
 const koaBodyParser = require('koa-bodyparser')
 const { router } = require('./routers')
 const koaBody = require('koa-body')
@@ -28,13 +29,13 @@ const resolvers = {
 app.use(koaBody({
     multipart: true,
     formidable: {
-        maxFileSize: 2000 * 1024 * 1024    // 设置上传文件大小最大限制，默认2M
+        // maxFileSize: 2000 * 1024 * 1024    // 设置上传文件大小最大限制，默认2M
     }
 }))
-
+app.use(cors());
 app.use(async (ctx, next) => {
     ctx.set("Access-Control-Allow-Origin", "*")
-    ctx.set("Access-Control-Allow-Headers", "authorization")
+    // ctx.set("Access-Control-Allow-Headers", "authorization")
     await next()
 })
 app.use(
