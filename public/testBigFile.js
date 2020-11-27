@@ -63,52 +63,86 @@ $(document).ready(() => {
         const totalSize = file.size; //定义文件大小
         let loadedSize = 0; //定义加载的大小
         const BASE_URL = `http://localhost:8088`
+        async function handleHttp() {
+            for (let i = 0; i < blockCount; i++) {
+                const start = i * chunkSize;
+                const end = Math.min(file.size, start + chunkSize);
+                // 构建表单
+                const form = new FormData();
+                form.append('file', blobSlice.call(file, start, end));
+                form.append('name', file.name);
+                form.append('total', blockCount);
+                form.append('index', i);
+                form.append('size', file.size);
+                form.append('hash', hash);
 
-        for (let i = 0; i < blockCount; i++) {
-            const start = i * chunkSize;
-            const end = Math.min(file.size, start + chunkSize);
-            // 构建表单
-            const form = new FormData();
-            form.append('file', blobSlice.call(file, start, end));
-            form.append('name', file.name);
-            form.append('total', blockCount);
-            form.append('index', i);
-            form.append('size', file.size);
-            form.append('hash', hash);
-            // ajax提交 分片，此时 content-type 为 multipart/form-data
-            const axiosOptions = {
-                onUploadProgress: e => {
-                    // 处理上传的进度
-                    // console.log(e.loaded / e.total * 100);
-                    // loadedSize += e.loaded;
-                    // if(loadedSize >= totalSize) loadedSize = totalSize
-                    // console.log(loadedSize / totalSize * 100)
-                    if(e.loaded / e.total * 100 === 100){ //当前切片加载完毕
-                        loadedSize += e.total
-                    } 
-                    
-                },
-            };
-            // 加入到 Promise 数组中
-            axiosPromiseArray.push(axios.post(BASE_URL + '/file/uploadChunk', form, axiosOptions));
+
+                /* 
+                   循环提交请求
+                */
+                const axiosOptions = {
+                    onUploadProgress: function (e) {
+                        // 处理上传的进度
+                        // if (e.loaded / e.total * 100 === 100) { //当前切片加载完毕
+                        //     loadedSize += e.total
+                        // }
+                        loadedSize = i * e.total; //已上传的切片
+                        loadedSize += e.loaded;   //当前切片进度
+                        window.element.progress('change', loadedSize / file.size * 100 + '%');
+                        console.log(i,loadedSize)
+                    },
+                };
+                await axios.post(BASE_URL + '/file/uploadChunk', form, axiosOptions)
+                // // ajax提交 分片，此时 content-type 为 multipart/form-data
+
+                // const axiosOptions = {
+                //     onUploadProgress: function(e) {
+                //         // 处理上传的进度
+                //         console.log(this.data)
+                //         if(e.loaded / e.total * 100 === 100){ //当前切片加载完毕
+                //             loadedSize += e.total
+                //         } 
+
+                //     },
+                // };
+                // // 加入到 Promise 数组中
+                // axiosPromiseArray.push(axios.post(BASE_URL + '/file/uploadChunk', form, axiosOptions));
+            }
         }
+        await  handleHttp();
+        loadedSize = file.size;
         // 所有分片上传后，请求合并分片文件
-        await axios.all(axiosPromiseArray).then((res) => {
-            console.log(res)
-            // 合并chunks
-            const data = {
-                size: file.size,
-                name: file.name,
-                total: blockCount,
-                hash
-            };
-            axios.post(BASE_URL + '/file/merge_chunks', data).then(res => {
-                console.log('上传成功');
-                console.log(res.data, file);
-                alert('上传成功');
-            }).catch(err => {
-                console.log(err);
-            });
+        const data = {
+            size: file.size,
+            name: file.name,
+            total: blockCount,
+            hash
+        };
+        await axios.post(BASE_URL + '/file/merge_chunks', data).then(res => {
+            console.log('上传成功');
+            window.element.progress('change', loadedSize / file.size * 100 + '%');
+            console.log(res.data, file);
+            // alert('上传成功');
+        }).catch(err => {
+            console.log(err);
         });
+        // await axios.all(axiosPromiseArray).then((res) => {
+        //     console.log(res)
+        //     // 合并chunks
+        //     const data = {
+        //         size: file.size,
+        //         name: file.name,
+        //         total: blockCount,
+        //         hash
+        //     };
+        //     await  axios.post(BASE_URL + '/file/merge_chunks', data).then(res => {
+        //         console.log('上传成功');
+        //         console.log(res.data, file);
+        //         alert('上传成功');
+        //     }).catch(err => {
+        //         console.log(err);
+        //     });
+        // });
     });
+
 })

@@ -54,6 +54,6 @@ app.use(
 
 app.use(router.routes())
     .listen(8088, () => {
-        console.log('server is ok ....')
+        console.log('🚀 🚀 🚀 server is ok ....')
         // console.log(`🚀 Server ready at http://localhost:8088${server.graphqlPath}`)
     })
